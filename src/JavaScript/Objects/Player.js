@@ -1,9 +1,13 @@
+import * as THREE from "https://unpkg.com/three/build/three.module.js";
+import { GLTFLoader } from "https://unpkg.com/three/examples/jsm/loaders/GLTFLoader.js";
+import Bullet from "./Bullet.js";
+
 class Player {
-  constructor() {
+  constructor(scene) {
     this.x = 0;
     this.y = 0;
     this.z = 5;
-    this.speed = 0.15;
+    this.speed = 0.3;
     //horizontal
     this.xSpeed = 0;
     this.zSpeed = 0;
@@ -15,8 +19,11 @@ class Player {
       a: 0,
       s: 0,
       d: 0,
-      space: 0
+      space: 0,
     };
+    this.ammo = 25;
+    this.bullets = [];
+    this.model;
   }
   keyPressed(key) {
     //w
@@ -35,7 +42,7 @@ class Player {
     if (key === 68) {
       this.keys.d = 1;
     }
-    if( key === 32) {
+    if (key === 32) {
       this.keys.space = 1;
     }
   }
@@ -56,7 +63,7 @@ class Player {
     if (key === 68) {
       this.keys.d = 0;
     }
-    if( key === 32) {
+    if (key === 32) {
       this.keys.space = 0;
     }
   }
@@ -96,10 +103,10 @@ class Player {
           }
         }
       }
-      if(this.keys.space === 1 && this.jumped === false) {
-        this.ySpeed = .25;
-        this.jumped = true;
-      }
+    }
+    if (this.keys.space === 1 && this.jumped === false) {
+      this.ySpeed = 0.4;
+      this.jumped = true;
     }
     this.ySpeed -= GRAVITY;
   }
@@ -107,16 +114,30 @@ class Player {
     this.x += this.xSpeed;
     this.y += this.ySpeed;
     this.z += this.zSpeed;
-    if(this.y <= -2.5) {
+    if (this.y <= -2.5) {
       this.y = -2.5;
       this.ySpeed = 0;
       this.jumped = false;
     }
   }
-
+  shoot(scene, raycaster) {
+    if (this.ammo > 0) {
+      console.log(raycaster);
+      let bullet = new Bullet(this.x, this.y, this.z, raycaster.ray.direction);
+      this.bullets.push(bullet);
+      this.ammo--;
+      scene.add(bullet.mesh);
+    } else {
+      console.log("no ammo");
+    }
+  }
   update(raycaster, cursorLock, GRAVITY) {
     this.setSpeed(raycaster.direction, cursorLock, GRAVITY);
     this.setPosition();
+    this.bullets.forEach((e) => {
+      e.update();
+    });
+    document.getElementById('ammo').innerHTML = this.ammo;
   }
 }
 

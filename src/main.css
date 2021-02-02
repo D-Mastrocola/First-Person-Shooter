@@ -4,3 +4,18 @@ body {
     height: 100%;
     margin: 0;
 }
+#crosshair {
+    width: 4px;
+    height: 4px;
+    background-color: #ffff00;
+    position: absolute;
+    top: calc(50% - 2px);
+    left: calc(50% - 2px);
+}
+#ammo {
+    color: #fff;
+    position: absolute;
+    font-size: 5em;
+    bottom: 20px;
+    right: 20px;
+}
