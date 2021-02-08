@@ -7,7 +7,7 @@ class Player {
     this.x = 0;
     this.y = 0;
     this.z = 5;
-    this.speed = 0.3;
+    this.speed = 0.2;
     //horizontal
     this.xSpeed = 0;
     this.zSpeed = 0;

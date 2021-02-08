@@ -3,6 +3,7 @@ import { PointerLockControls } from "https://threejs.org/examples/jsm/controls/P
 import Player from "./Objects/Player.js";
 import Block from "./Objects/Block.js";
 import Ground from "./Objects/Ground.js";
+import AmmoRefill from "./Objects/AmmoRefill.js";
 
 const GRAVITY = 0.02;
 
@@ -18,7 +19,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
 const ground = new Ground(0, -4, 0, 100, 100, 0x9b7653);
-
+let ammoCrate = new AmmoRefill(-10, -4, -10, scene);
 scene.add(...ground.mesh);
 
 const raycaster = new THREE.Raycaster();
@@ -36,8 +37,8 @@ document.body.appendChild(renderer.domElement);
 //Create a PointLight and turn on shadows for the light
 const light = new THREE.PointLight(0xffffff, 1, 1000);
 light.position.set(20, 20, 10);
-const light2 = new THREE.PointLight(0xffffff, 0.2, 100);
-light2.position.set(-20, 10, -20);
+const light2 = new THREE.PointLight(0xffffff, 0.4, 100);
+light2.position.set(-20, 10, -40);
 scene.add(light);
 scene.add(light2);
 

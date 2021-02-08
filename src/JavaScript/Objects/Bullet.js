@@ -13,7 +13,7 @@ class Bullet {
     }
     init(raycaster) {
         this.geometry = new THREE.SphereGeometry(this.size, 32, 32);
-        this.material = new THREE.MeshBasicMaterial({ color: 0xff00ff });
+        this.material = new THREE.MeshPhongMaterial({ color: 0xff00ff });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh.position.x = this.x;
         this.mesh.position.y = this.y;
