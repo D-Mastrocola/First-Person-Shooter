@@ -1,23 +1,21 @@
+import * as THREE from "https://threejsfundamentals.org/threejs/resources/threejs/r127/build/three.module.js";
 import Bullet from "./Bullet.js";
 
 class Player {
   constructor(scene) {
-    this.x = 0;
-    this.y = 0;
-    this.z = 5;
+    this.pos = new THREE.Vector3(0, 0, 5);
+    console.log(this.pos);
     this.speed = 0.2;
     //horizontal
-    this.xSpeed = 0;
-    this.zSpeed = 0;
+    this.vel = new THREE.Vector3(0, 0, 0);
     //vertical
-    this.ySpeed = 0;
     this.jumped = true;
     this.keys = {
-      w: 0,
-      a: 0,
-      s: 0,
-      d: 0,
-      space: 0,
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+      space: false,
     };
     this.ammo = 25;
     this.bullets = [];
@@ -26,102 +24,97 @@ class Player {
   keyPressed(key) {
     //w
     if (key === 87) {
-      this.keys.w = 1;
+      this.keys.w = true;
     }
     //s
     if (key === 83) {
-      this.keys.s = 1;
+      this.keys.s = true;
     }
     //a
     if (key === 65) {
-      this.keys.a = 1;
+      this.keys.a = true;
     }
     //d
     if (key === 68) {
-      this.keys.d = 1;
+      this.keys.d = true;
     }
     if (key === 32) {
-      this.keys.space = 1;
+      this.keys.space = true;
     }
   }
   keyReleased(key) {
     //w
     if (key === 87) {
-      this.keys.w = 0;
+      this.keys.w = false;
     }
     //s
     if (key === 83) {
-      this.keys.s = 0;
+      this.keys.s = false;
     }
     //a
     if (key === 65) {
-      this.keys.a = 0;
+      this.keys.a = false;
     }
     //d
     if (key === 68) {
-      this.keys.d = 0;
+      this.keys.d = false;
     }
     if (key === 32) {
-      this.keys.space = 0;
+      this.keys.space = false;
     }
   }
   setSpeed(raycaster, cursorLock, GRAVITY) {
-    this.xSpeed = 0;
-    this.zSpeed = 0;
+    this.vel.x = 0;
+    this.vel.z = 0;
     if (
       cursorLock &&
-      (this.keys.w === 1 ||
-        this.keys.s === 1 ||
-        this.keys.a === 1 ||
-        this.keys.d === 1)
+      (this.keys.w || this.keys.s || this.keys.a || this.keys.d)
     ) {
-      if (this.keys.w === 1 || this.keys.s === 1) {
-        if (this.keys.w === 1) {
-          if (this.keys.s !== 1) {
-            this.zSpeed = this.speed * raycaster.z;
-            this.xSpeed = this.speed * raycaster.x;
-          }
-        } else if (this.keys.s === 1) {
-          if (this.keys.w !== 1) {
-            this.zSpeed = -this.speed * raycaster.z;
-            this.xSpeed = -this.speed * raycaster.x;
-          }
-        }
+      let direction = raycaster.direction.clone();
+      direction.y = 0;
+      direction.normalize();
+      direction.multiplyScalar(this.speed);
+
+      if (this.keys.w) {
+        this.vel.add(direction);
       }
-      if (this.keys.a === 1 || this.keys.d === 1) {
-        if (this.keys.a === 1) {
-          if (this.keys.d !== 1) {
-            this.xSpeed = this.speed * raycaster.z;
-            this.zSpeed = -this.speed * raycaster.x;
-          }
-        } else if (this.keys.d === 1) {
-          if (this.keys.a !== 1) {
-            this.xSpeed = -this.speed * raycaster.z;
-            this.zSpeed = this.speed * raycaster.x;
-          }
-        }
+      if (this.keys.a) {
+        let newDir = direction.clone();
+        //Rotates the vector 90 degrees
+        let axis = new THREE.Vector3(0, 1, 0);
+        newDir.applyAxisAngle(axis, Math.PI / 2);
+        this.vel.add(newDir);
+      }
+      if (this.keys.s) {
+        this.vel.sub(direction);
+      }
+      if (this.keys.d) {
+        let newDir = direction.clone();
+        //Rotates the vector 90 degrees
+        let axis = new THREE.Vector3(0, 1, 0);
+        newDir.applyAxisAngle(axis, Math.PI / 2);
+        newDir.negate();
+        this.vel.add(newDir);
       }
     }
-    if (this.keys.space === 1 && this.jumped === false) {
-      this.ySpeed = 0.4;
+
+    if(this.keys.space && !this.jumped) {
+      this.vel.y = .4;
       this.jumped = true;
     }
-    this.ySpeed -= GRAVITY;
+    this.vel.y -= GRAVITY;
   }
   setPosition() {
-    this.x += this.xSpeed;
-    this.y += this.ySpeed;
-    this.z += this.zSpeed;
-    if (this.y <= -2.5) {
-      this.y = -2.5;
-      this.ySpeed = 0;
+    this.pos.add(this.vel);
+    if (this.pos.y <= -2.5) {
+      this.pos.y = -2.5;
+      this.vel.y = 0;
       this.jumped = false;
     }
   }
   shoot(scene, raycaster) {
     if (this.ammo > 0) {
-      console.log(raycaster);
-      let bullet = new Bullet(this.x, this.y, this.z, raycaster.ray.direction);
+      let bullet = new Bullet(this.pos.x, this.pos.y, this.pos.z, raycaster);
       this.bullets.push(bullet);
       this.ammo--;
       scene.add(bullet.mesh);
@@ -130,12 +123,12 @@ class Player {
     }
   }
   update(raycaster, cursorLock, GRAVITY) {
-    this.setSpeed(raycaster.direction, cursorLock, GRAVITY);
+    this.setSpeed(raycaster, cursorLock, GRAVITY);
     this.setPosition();
     this.bullets.forEach((e) => {
       e.update();
     });
-    document.getElementById('ammo').innerHTML = this.ammo;
+    document.getElementById("ammo").innerHTML = this.ammo;
   }
 }
 

@@ -94,9 +94,9 @@ function animate() {
 
   raycaster.setFromCamera(mouse, camera);
   player.update(raycaster.ray, cursorLock, GRAVITY);
-  camera.position.x = player.x;
-  camera.position.y = player.y;
-  camera.position.z = player.z;
+  camera.position.x = player.pos.x;
+  camera.position.y = player.pos.y;
+  camera.position.z = player.pos.z;
   renderer.render(scene, camera);
 }
 animate();
