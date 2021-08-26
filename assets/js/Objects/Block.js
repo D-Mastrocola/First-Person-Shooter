@@ -16,7 +16,6 @@ class Block {
         this.mesh.position.x = this.pos.x;
         this.mesh.position.y = this.pos.y;
         this.mesh.position.z = this.pos.z;
-        console.log(this.mesh);
     }
 }
 export default Block;

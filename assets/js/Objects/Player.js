@@ -2,12 +2,21 @@ import * as THREE from "https://threejsfundamentals.org/threejs/resources/threej
 import Bullet from "./Bullet.js";
 
 class Player {
-  constructor() {
+  constructor(scene) {
     this.pos = new THREE.Vector3(1.8, 0, 5);
-    console.log(this.pos);
     this.speed = 0.2;
     //horizontal
     this.vel = new THREE.Vector3(0, 0, 0);
+    this.geometry = new THREE.BoxGeometry(2.5, 4, 2.5, 2, 4, 2);
+    this.material = new THREE.MeshBasicMaterial();
+    this.material.wireframe = true;
+    //this.material.visible = false;
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    console.log(this.mesh);
+    this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+    scene.add(this.mesh);
+    this.highestMeshRotation = 0;
+    console.log(this.geometry);
     //vertical
     this.jumped = true;
     this.keys = {
@@ -100,23 +109,36 @@ class Player {
     }
 
     if (this.keys.space && !this.jumped) {
-      this.vel.y = 0.4;
+      this.vel.y = 1;
       this.jumped = true;
     }
     this.vel.y -= GRAVITY;
   }
-  setPosition(world) {
+  setPosition(camera) {
     this.pos.add(this.vel);
-    this.checkCollisions(world);
+    //this.mesh.position.add(this.vel);
+    this.checkCollisions();
   }
-  checkCollisions(world) {
+  checkCollisions() {
     if (this.pos.y <= -2.5) {
       this.pos.y = -2.5;
       this.vel.y = 0;
       this.jumped = false;
     }
-
-    world.objects.forEach((object) => {
+    /*for (var vertexIndex = 0; vertexIndex < this.geometry.vertices.length; vertexIndex++)
+    {       
+        var localVertex = this.geometry.vertices[vertexIndex].clone();
+        var globalVertex = this.matrix.multiplyVector3(localVertex);
+        var directionVector = globalVertex.subSelf( this.position );
+    
+        var ray = new THREE.Ray( this.position, directionVector.clone().normalize() );
+        var collisionResults = ray.intersectObjects( collidableMeshList );
+        if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+        {
+            console.log(ray)
+        }
+    }*/
+    /*world.objects.forEach((object) => {
       if (
         this.pos.x + this.size.x / 2 > object.pos.x - object.size.x / 2 &&
         this.pos.x - this.size.x / 2 < object.pos.x + object.size.x / 2
@@ -129,15 +151,15 @@ class Player {
             this.pos.y + this.size.y / 2 > object.pos.y - object.size.y / 2 &&
             this.pos.y - this.size.y / 2 < object.pos.y + object.size.y / 2
           ) {
-            /*let playerRay = new THREE.Raycaster(
+            let playerRay = new THREE.Raycaster(
               this.pos.sub(this.vel),
               this.pos
             );
-            //console.log(playerRay.ray)*/
+            //console.log(playerRay.ray)
           }
         }
       }
-    });
+    });*/
   }
   shoot(scene, raycaster) {
     if (this.ammo > 0) {
@@ -149,9 +171,23 @@ class Player {
       console.log("no ammo");
     }
   }
-  update(raycaster, cursorLock, GRAVITY, world) {
+  update(camera, raycaster, cursorLock, GRAVITY) {
     this.setSpeed(raycaster, cursorLock, GRAVITY);
-    this.setPosition(world);
+    this.setPosition(camera);
+
+    this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+    if (camera> Math.PI) {
+      this.mesh.rotation.y = camera - camera/Math.PI * Math.PI * 2;
+    } else if (camera < -Math.PI) {
+      this.mesh.rotation.y = camera + camera/Math.PI * Math.PI * 2;
+    } else {
+      this.mesh.rotation.y = camera;
+    }
+
+    if (Math.abs(this.mesh.rotation.y) > this.highestMeshRotation) {
+      this.highestMeshRotation = this.mesh.rotation.y;
+      console.log(this.highestMeshRotation);
+    }
     this.bullets.forEach((e) => {
       e.update();
     });

@@ -22,6 +22,8 @@ let ground = new Ground(0, -4, 0, 100, 100, 0x9b7653);
 scene.add(...ground.mesh);
 let world = new World([new Block(0, 0, 0, 2, 10, 2, 0xffff00)], scene);
 
+let ammoCrate = new AmmoRefill(-10, -4, -10, scene);
+
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
@@ -88,7 +90,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   raycaster.setFromCamera(mouse, camera);
-  player.update(raycaster.ray, cursorLock, GRAVITY, world);
+  player.update(camera.rotation.y, raycaster.ray, cursorLock, GRAVITY);
   camera.position.x = player.pos.x;
   camera.position.y = player.pos.y;
   camera.position.z = player.pos.z;
