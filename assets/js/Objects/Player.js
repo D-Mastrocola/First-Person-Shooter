@@ -2,8 +2,8 @@ import * as THREE from "https://threejsfundamentals.org/threejs/resources/threej
 import Bullet from "./Bullet.js";
 
 class Player {
-  constructor(scene) {
-    this.pos = new THREE.Vector3(0, 0, 5);
+  constructor() {
+    this.pos = new THREE.Vector3(1.8, 0, 5);
     console.log(this.pos);
     this.speed = 0.2;
     //horizontal
@@ -17,6 +17,7 @@ class Player {
       d: false,
       space: false,
     };
+    this.size = new THREE.Vector3(2.5, 4, 2.5);
     this.ammo = 25;
     this.bullets = [];
     this.model;
@@ -98,19 +99,45 @@ class Player {
       }
     }
 
-    if(this.keys.space && !this.jumped) {
-      this.vel.y = .4;
+    if (this.keys.space && !this.jumped) {
+      this.vel.y = 0.4;
       this.jumped = true;
     }
     this.vel.y -= GRAVITY;
   }
-  setPosition() {
+  setPosition(world) {
     this.pos.add(this.vel);
+    this.checkCollisions(world);
+  }
+  checkCollisions(world) {
     if (this.pos.y <= -2.5) {
       this.pos.y = -2.5;
       this.vel.y = 0;
       this.jumped = false;
     }
+
+    world.objects.forEach((object) => {
+      if (
+        this.pos.x + this.size.x / 2 > object.pos.x - object.size.x / 2 &&
+        this.pos.x - this.size.x / 2 < object.pos.x + object.size.x / 2
+      ) {
+        if (
+          this.pos.z + this.size.z / 2 > object.pos.z - object.size.z / 2 &&
+          this.pos.z - this.size.z / 2 < object.pos.z + object.size.z / 2
+        ) {
+          if (
+            this.pos.y + this.size.y / 2 > object.pos.y - object.size.y / 2 &&
+            this.pos.y - this.size.y / 2 < object.pos.y + object.size.y / 2
+          ) {
+            /*let playerRay = new THREE.Raycaster(
+              this.pos.sub(this.vel),
+              this.pos
+            );
+            //console.log(playerRay.ray)*/
+          }
+        }
+      }
+    });
   }
   shoot(scene, raycaster) {
     if (this.ammo > 0) {
@@ -122,9 +149,9 @@ class Player {
       console.log("no ammo");
     }
   }
-  update(raycaster, cursorLock, GRAVITY) {
+  update(raycaster, cursorLock, GRAVITY, world) {
     this.setSpeed(raycaster, cursorLock, GRAVITY);
-    this.setPosition();
+    this.setPosition(world);
     this.bullets.forEach((e) => {
       e.update();
     });
