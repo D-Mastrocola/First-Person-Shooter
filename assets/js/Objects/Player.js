@@ -174,20 +174,17 @@ class Player {
   update(camera, raycaster, cursorLock, GRAVITY) {
     this.setSpeed(raycaster, cursorLock, GRAVITY);
     this.setPosition(camera);
-
+    
     this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
-    if (camera> Math.PI) {
-      this.mesh.rotation.y = camera - camera/Math.PI * Math.PI * 2;
-    } else if (camera < -Math.PI) {
-      this.mesh.rotation.y = camera + camera/Math.PI * Math.PI * 2;
-    } else {
-      this.mesh.rotation.y = camera;
-    }
 
-    if (Math.abs(this.mesh.rotation.y) > this.highestMeshRotation) {
-      this.highestMeshRotation = this.mesh.rotation.y;
-      console.log(this.highestMeshRotation);
-    }
+    //create a vector from raycaser and player so we can rotate the mesh
+    let meshLookAt = this.pos.clone();
+    meshLookAt.add(raycaster.direction);
+    meshLookAt.y = this.mesh.position.y;
+    
+    
+    //Rotate mesh
+    this.mesh.lookAt(meshLookAt);
     this.bullets.forEach((e) => {
       e.update();
     });

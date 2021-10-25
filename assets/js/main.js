@@ -50,6 +50,7 @@ let player = new Player(scene);
 camera.position.z = 15;
 camera.position.x = 15;
 
+console.log(camera)
 document.addEventListener("click", () => {
   if (cursorLock) {
     player.shoot(scene, raycaster);
@@ -90,7 +91,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   raycaster.setFromCamera(mouse, camera);
-  player.update(camera.rotation.y, raycaster.ray, cursorLock, GRAVITY);
+  player.update(camera, raycaster.ray, cursorLock, GRAVITY);
   camera.position.x = player.pos.x;
   camera.position.y = player.pos.y;
   camera.position.z = player.pos.z;
