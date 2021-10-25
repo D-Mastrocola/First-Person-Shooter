@@ -114,12 +114,12 @@ class Player {
     }
     this.vel.y -= GRAVITY;
   }
-  setPosition(camera) {
+  setPosition(world) {
     this.pos.add(this.vel);
     //this.mesh.position.add(this.vel);
-    this.checkCollisions();
+    this.checkCollisions(world);
   }
-  checkCollisions() {
+  checkCollisions(world) {
     if (this.pos.y <= -2.5) {
       this.pos.y = -2.5;
       this.vel.y = 0;
@@ -138,7 +138,7 @@ class Player {
             console.log(ray)
         }
     }*/
-    /*world.objects.forEach((object) => {
+    world.objects.forEach((object) => {
       if (
         this.pos.x + this.size.x / 2 > object.pos.x - object.size.x / 2 &&
         this.pos.x - this.size.x / 2 < object.pos.x + object.size.x / 2
@@ -151,15 +151,27 @@ class Player {
             this.pos.y + this.size.y / 2 > object.pos.y - object.size.y / 2 &&
             this.pos.y - this.size.y / 2 < object.pos.y + object.size.y / 2
           ) {
-            let playerRay = new THREE.Raycaster(
-              this.pos.sub(this.vel),
-              this.pos
-            );
+            let absVel = {
+              x: Math.abs(this.vel.x),
+              y: Math.abs(this.vel.y),
+              z: Math.abs(this.vel.z)
+            }
+            if(absVel.y >= absVel.x && absVel.y >= absVel.z) {
+              this.pos.y -= this.vel.y;
+              if(this.vel.y < 0) this.jumped = false;
+              this.vel.y = 0;
+            } else if(absVel.x >= absVel.y && absVel.x >= absVel.z) {
+              this.pos.x -= this.vel.x;
+              this.vel.x = 0;
+            } else {
+              this.pos.z -= this.vel.z;
+              this.vel.z = 0;
+            }
             //console.log(playerRay.ray)
           }
         }
       }
-    });*/
+    });
   }
   shoot(scene, raycaster) {
     if (this.ammo > 0) {
@@ -171,9 +183,9 @@ class Player {
       console.log("no ammo");
     }
   }
-  update(camera, raycaster, cursorLock, GRAVITY) {
+  update(raycaster, cursorLock, GRAVITY, world) {
     this.setSpeed(raycaster, cursorLock, GRAVITY);
-    this.setPosition(camera);
+    this.setPosition(world);
     
     this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
 
