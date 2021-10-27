@@ -4,6 +4,7 @@ import Player from './Objects/Player.js';
 import Block from './Objects/Block.js';
 import Ground from './Objects/Ground.js';
 import AmmoRefill from './Objects/AmmoRefill.js';
+import World from './Objects/World.js'
 
 const GRAVITY = 0.02;
 
@@ -17,10 +18,12 @@ const far = 1000;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-
-const ground = new Ground(0, -4, 0, 100, 100, 0x9b7653);
-let ammoCrate = new AmmoRefill(-10, -4, -10, scene);
+let ground = new Ground(0, -4, 0, 100, 100, 0x9b7653);
 scene.add(...ground.mesh);
+let world = new World([new Block(0, 0, 0, 2, 10, 2, 0xffff00)], scene);
+
+let ammoCrate = new AmmoRefill(-10, -4, -10, scene);
+
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
@@ -42,17 +45,12 @@ light2.position.set(-20, 10, -40);
 scene.add(light);
 scene.add(light2);
 
-let cube = new Block(0, 0, 0, 2, 10, 2, 0xffff00);
-let cube2 = new Block(8, 0, 0, 5, 10, 5, 0x00ffff);
-
-scene.add(cube.mesh);
-scene.add(cube2.mesh);
-
 let player = new Player(scene);
 
 camera.position.z = 15;
 camera.position.x = 15;
 
+console.log(camera)
 document.addEventListener("click", () => {
   if (cursorLock) {
     player.shoot(scene, raycaster);
@@ -93,7 +91,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   raycaster.setFromCamera(mouse, camera);
-  player.update(raycaster.ray, cursorLock, GRAVITY);
+  player.update(raycaster.ray, cursorLock, GRAVITY, world);
   camera.position.x = player.pos.x;
   camera.position.y = player.pos.y;
   camera.position.z = player.pos.z;

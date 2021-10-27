@@ -3,11 +3,20 @@ import Bullet from "./Bullet.js";
 
 class Player {
   constructor(scene) {
-    this.pos = new THREE.Vector3(0, 0, 5);
-    console.log(this.pos);
+    this.pos = new THREE.Vector3(1.8, 0, 5);
     this.speed = 0.2;
     //horizontal
     this.vel = new THREE.Vector3(0, 0, 0);
+    this.geometry = new THREE.BoxGeometry(2.5, 4, 2.5, 2, 4, 2);
+    this.material = new THREE.MeshBasicMaterial();
+    this.material.wireframe = true;
+    //this.material.visible = false;
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    console.log(this.mesh);
+    this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+    scene.add(this.mesh);
+    this.highestMeshRotation = 0;
+    console.log(this.geometry);
     //vertical
     this.jumped = true;
     this.keys = {
@@ -17,6 +26,7 @@ class Player {
       d: false,
       space: false,
     };
+    this.size = new THREE.Vector3(2.5, 4, 2.5);
     this.ammo = 25;
     this.bullets = [];
     this.model;
@@ -98,19 +108,70 @@ class Player {
       }
     }
 
-    if(this.keys.space && !this.jumped) {
-      this.vel.y = .4;
+    if (this.keys.space && !this.jumped) {
+      this.vel.y = 1;
       this.jumped = true;
     }
     this.vel.y -= GRAVITY;
   }
-  setPosition() {
+  setPosition(world) {
     this.pos.add(this.vel);
+    //this.mesh.position.add(this.vel);
+    this.checkCollisions(world);
+  }
+  checkCollisions(world) {
     if (this.pos.y <= -2.5) {
       this.pos.y = -2.5;
       this.vel.y = 0;
       this.jumped = false;
     }
+    /*for (var vertexIndex = 0; vertexIndex < this.geometry.vertices.length; vertexIndex++)
+    {       
+        var localVertex = this.geometry.vertices[vertexIndex].clone();
+        var globalVertex = this.matrix.multiplyVector3(localVertex);
+        var directionVector = globalVertex.subSelf( this.position );
+    
+        var ray = new THREE.Ray( this.position, directionVector.clone().normalize() );
+        var collisionResults = ray.intersectObjects( collidableMeshList );
+        if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+        {
+            console.log(ray)
+        }
+    }*/
+    world.objects.forEach((object) => {
+      if (
+        this.pos.x + this.size.x / 2 > object.pos.x - object.size.x / 2 &&
+        this.pos.x - this.size.x / 2 < object.pos.x + object.size.x / 2
+      ) {
+        if (
+          this.pos.z + this.size.z / 2 > object.pos.z - object.size.z / 2 &&
+          this.pos.z - this.size.z / 2 < object.pos.z + object.size.z / 2
+        ) {
+          if (
+            this.pos.y + this.size.y / 2 > object.pos.y - object.size.y / 2 &&
+            this.pos.y - this.size.y / 2 < object.pos.y + object.size.y / 2
+          ) {
+            let absVel = {
+              x: Math.abs(this.vel.x),
+              y: Math.abs(this.vel.y),
+              z: Math.abs(this.vel.z)
+            }
+            if(absVel.y >= absVel.x && absVel.y >= absVel.z) {
+              this.pos.y -= this.vel.y;
+              if(this.vel.y < 0) this.jumped = false;
+              this.vel.y = 0;
+            } else if(absVel.x >= absVel.y && absVel.x >= absVel.z) {
+              this.pos.x -= this.vel.x;
+              this.vel.x = 0;
+            } else {
+              this.pos.z -= this.vel.z;
+              this.vel.z = 0;
+            }
+            //console.log(playerRay.ray)
+          }
+        }
+      }
+    });
   }
   shoot(scene, raycaster) {
     if (this.ammo > 0) {
@@ -122,9 +183,20 @@ class Player {
       console.log("no ammo");
     }
   }
-  update(raycaster, cursorLock, GRAVITY) {
+  update(raycaster, cursorLock, GRAVITY, world) {
     this.setSpeed(raycaster, cursorLock, GRAVITY);
-    this.setPosition();
+    this.setPosition(world);
+    
+    this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+
+    //create a vector from raycaser and player so we can rotate the mesh
+    let meshLookAt = this.pos.clone();
+    meshLookAt.add(raycaster.direction);
+    meshLookAt.y = this.mesh.position.y;
+    
+    
+    //Rotate mesh
+    this.mesh.lookAt(meshLookAt);
     this.bullets.forEach((e) => {
       e.update();
     });
